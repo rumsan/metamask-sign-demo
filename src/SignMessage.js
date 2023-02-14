@@ -40,7 +40,10 @@ export default function SignMessage() {
     const [verifiedAddress, setVerifiedAddress] = useState();
 
     const connectWallet = async () => {
-        if (!window.ethereum) return;
+        if (!window.ethereum) {
+                alert("Please install Metamask");
+                return;
+            }
         await window.ethereum.send("eth_requestAccounts");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
