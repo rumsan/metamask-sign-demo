@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ethers } from "ethers";
 import ErrorMessage from "./ErrorMessage";
 import SuccessMessage from "./SuccessMessage";
@@ -35,15 +35,17 @@ const truncateFirstAndLast = (str) => {
 };
 
 export default function SignMessage() {
+    const resultBox = useRef();
     const [error, setError] = useState();
     const [address, setAddress] = useState();
     const [verifiedAddress, setVerifiedAddress] = useState();
+    const [signature, setSignature] = useState();
 
     const connectWallet = async () => {
         if (!window.ethereum) {
-                alert("Please install Metamask");
-                return;
-            }
+            alert("Please install Metamask");
+            return;
+        }
         await window.ethereum.send("eth_requestAccounts");
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -57,7 +59,7 @@ export default function SignMessage() {
             if (!window.ethereum) return;
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
-            if(!signer) return;
+            if (!signer) return;
             const address = await signer.getAddress();
             console.log({ address });
             setAddress(address);
@@ -74,6 +76,7 @@ export default function SignMessage() {
         });
         if (sig) {
             setVerifiedAddress(address);
+            setSignature(sig.signature);
         }
     };
 
@@ -84,9 +87,9 @@ export default function SignMessage() {
                     <h1 className="text-xl font-semibold text-gray-700 text-center">
                         {address ? (<div>
                             Sign message as &nbsp;
-                            <a style={{color: "blue"}} href={`https://etherscan.io/address/${address}`} >{truncateFirstAndLast(address)}</a>
+                            <a style={{ color: "blue" }} href={`https://etherscan.io/address/${address}`} >{truncateFirstAndLast(address)}</a>
                         </div>
-                            ) : "Sign message"}
+                        ) : "Sign message"}
                     </h1>
                     <div className="">
                         <div className="my-4">
@@ -122,6 +125,22 @@ export default function SignMessage() {
                     <ErrorMessage message={error} />
                     {verifiedAddress && <SuccessMessage message={`Successfully Signed Message as ${truncateFirstAndLast(verifiedAddress)}`} />}
                 </footer>
+                {signature && <div className="p-2">
+                    <div className="my-3">
+                        <p style={{ color: "black" }}>Signer: {address}</p>
+                        <p style={{ color: "black" }}>Generated Signature:</p>
+                        <textarea
+                            type="text"
+                            readOnly
+                            ref={resultBox}
+                            className="textarea mt-2 w-full h-24 textarea-bordered focus:ring focus:outline-none"
+                            placeholder="Generated signature"
+                            value={signature || ''}
+                        />
+                    </div>
+                </div>}
+
+
 
             </div>
         </form>
